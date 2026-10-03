@@ -6,8 +6,6 @@ backend migrations. Backend-only tables are prefixed with `be_`.
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from sqlalchemy import (
     Boolean,
     Column,
@@ -27,7 +25,7 @@ class Base(DeclarativeBase):
 
 
 # ---------------------------------------------------------------------------
-# Frontend-owned tables (mirror only – do NOT create via Alembic)
+# Frontend-owned tables (mirror only - do NOT create via Alembic)
 # ---------------------------------------------------------------------------
 
 class City(Base):

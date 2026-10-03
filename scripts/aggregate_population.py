@@ -1,1 +1,1 @@
-"""Placeholder – aggregate WorldPop raster. Implemented in Phase 3."""
+"""Placeholder - aggregate WorldPop raster. Implemented in Phase 3."""

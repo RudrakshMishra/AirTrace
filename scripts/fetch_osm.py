@@ -1,1 +1,1 @@
-"""Placeholder – fetch OSM static layers. Implemented in Phase 3."""
+"""Placeholder - fetch OSM static layers. Implemented in Phase 3."""
