@@ -43,7 +43,7 @@ def estimate_synthetic_population(
     Args:
         ward_feature: GeoJSON feature representing a ward
         city_id: City identifier
-        city_centre: [lat, lon] of city center
+        city_centre: [lon, lat] of city center
 
     Returns:
         (total_population, population_density_per_km2)
@@ -55,10 +55,11 @@ def estimate_synthetic_population(
 
     base_density = DEFAULT_DENSITIES.get(city_id, 5000.0)
 
-    if c_lat is not None and c_lon is not None:
+    if c_lat is not None and c_lon is not None and len(city_centre) == 2:
+        lon_c, lat_c = city_centre[0], city_centre[1]
         # Distance to city centre in degrees approx ~111 km per degree
-        d_lat = (c_lat - city_centre[0]) * 111.0
-        d_lon = (c_lon - city_centre[1]) * 111.0 * math.cos(math.radians(city_centre[0]))
+        d_lat = (c_lat - lat_c) * 111.0
+        d_lon = (c_lon - lon_c) * 111.0 * math.cos(math.radians(lat_c))
         dist_km = math.sqrt(d_lat**2 + d_lon**2)
 
         # Density decays with distance from center
@@ -96,7 +97,7 @@ def aggregate_population_for_city(
     with open(wards_file) as f:
         geojson = json.load(f)
 
-    city_centre = city.get("centre", [23.25, 77.41])
+    city_centre = city.get("centre", [77.41, 23.25])
 
     updated_features = []
     total_pop = 0.0

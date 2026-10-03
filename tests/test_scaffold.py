@@ -53,6 +53,6 @@ def test_health_endpoint():
     from airtrace.api.main import app
 
     client = TestClient(app)
-    resp = client.get("/health")
+    resp = client.get("/api/v1/public/health")
     assert resp.status_code == 200
     assert resp.json()["status"] == "ok"

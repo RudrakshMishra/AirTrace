@@ -89,7 +89,7 @@ def test_h3_grid_generation():
     city = {
         "name": "Test City",
         "bbox": [77.35, 23.20, 77.45, 23.30],
-        "centre": [23.25, 77.40],
+        "centre": [77.40, 23.25],
     }
 
     geojson = build_grid.generate_h3_grid_for_city("test_city", city, resolution=8)
@@ -118,7 +118,7 @@ def test_population_aggregation():
     pop, density = aggregate_population.estimate_synthetic_population(
         feature,
         "bhopal",
-        [23.25, 77.41],
+        [77.41, 23.25],
     )
 
     assert pop > 0

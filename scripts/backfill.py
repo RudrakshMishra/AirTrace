@@ -67,7 +67,7 @@ def backfill_city(city_id: str, days: int = 14) -> dict[str, int]:
 
     # Weather - forecast only (no historical API)
     try:
-        lat, lon = city["centre"]
+        lon, lat = city["centre"]
         data = weather.fetch_weather(city_id, lat, lon)
         records = weather.normalize_weather(data, lat, lon)
         counts["weather"] = len(records)
@@ -78,7 +78,7 @@ def backfill_city(city_id: str, days: int = 14) -> dict[str, int]:
 
     # CAMS - forecast only
     try:
-        lat, lon = city["centre"]
+        lon, lat = city["centre"]
         data = cams.fetch_air_quality(city_id, lat, lon)
         records = cams.normalize_air_quality(data, lat, lon)
         counts["cams"] = len(records)

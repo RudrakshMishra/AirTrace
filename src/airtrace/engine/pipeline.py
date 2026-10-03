@@ -5,13 +5,14 @@ Connects all engine components into the hourly processing flow.
 
 from __future__ import annotations
 
+import json
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.orm import Session
 
-from airtrace.config import load_cities_config, load_model_config
+from airtrace.config import DATA_DIR, load_cities_config, load_model_config
 from airtrace.engine import (
     actions,
     aqi,
@@ -23,9 +24,123 @@ from airtrace.engine import (
 )
 from airtrace.ingest import cams, weather
 from airtrace.logging import get_logger
-from airtrace.models import Action, Fire, Reading, Station, WardState
+from airtrace.models import Action, City, Fire, Reading, Station, Ward, WardState
 
 logger = get_logger(__name__)
+
+
+def ensure_city_and_wards_seeded(session: Session, city_id: str) -> list[Ward]:
+    """Ensure city and ward records exist in the database from static configuration.
+
+    Args:
+        session: Database session
+        city_id: City identifier
+
+    Returns:
+        List of Ward ORM models for this city
+    """
+    cities = load_cities_config()
+    city_cfg = cities.get(city_id)
+    if not city_cfg:
+        return []
+
+    # Ensure City exists
+    city_row = session.query(City).filter(City.id == city_id).first()
+    if not city_row:
+        lon, lat = city_cfg["centre"]
+        city_row = City(
+            id=city_id,
+            name=city_cfg.get("name", city_id.title()),
+            name_hi=city_cfg.get("name_hi"),
+            state=city_cfg.get("state", "Madhya Pradesh"),
+            lat=lat,
+            lon=lon,
+            bbox=city_cfg.get("bbox"),
+        )
+        session.merge(city_row)
+        session.commit()
+
+    # Ensure Wards exist
+    existing_wards = session.query(Ward).filter(Ward.city_id == city_id).all()
+    if existing_wards:
+        return existing_wards
+
+    wards_file = DATA_DIR / "static" / city_id / "wards.geojson"
+    if not wards_file.exists():
+        logger.warning("Wards file missing", extra={"city_id": city_id, "file": str(wards_file)})
+        return []
+
+    try:
+        with open(wards_file) as f:
+            geojson = json.load(f)
+
+        new_wards = []
+        for feat in geojson.get("features", []):
+            props = feat.get("properties", {})
+            geom = feat.get("geometry")
+            w_id = props.get("id") or feat.get("id")
+            if not w_id:
+                continue
+
+            w_row = Ward(
+                id=str(w_id),
+                city_id=city_id,
+                name=props.get("name", f"Ward {w_id}"),
+                name_hi=props.get("name_hi"),
+                geometry=geom,
+                centroid_lat=props.get("centroid_lat"),
+                centroid_lon=props.get("centroid_lon"),
+                pop_density=props.get("population_density"),
+                n_schools=props.get("schools_count", 0),
+                n_hospitals=props.get("hospitals_count", 0),
+                road_density_km=props.get("road_density_km", 0.0),
+                industrial_area_km2=props.get("industrial_area_km2", 0.0),
+            )
+            session.merge(w_row)
+            new_wards.append(w_row)
+
+        session.commit()
+        logger.info(f"Seeded {len(new_wards)} wards for {city_id}", extra={"city_id": city_id})
+        return new_wards
+    except Exception as e:
+        logger.error(f"Failed to seed wards for {city_id}", extra={"city_id": city_id, "error": str(e)})
+        session.rollback()
+        return []
+
+
+def fetch_ward_history(
+    session: Session,
+    ward_id: str,
+    timestamp: datetime,
+    lookback_hours: int = 6,
+) -> tuple[list[float | None], list[float | None]]:
+    """Fetch previous ventilation indices and PM2.5 values for pollution trap detection.
+
+    Args:
+        session: Database session
+        ward_id: Ward identifier
+        timestamp: Current processing timestamp
+        lookback_hours: Number of past hours to query
+
+    Returns:
+        (ventilation_history, pm25_history)
+    """
+    cutoff = timestamp - timedelta(hours=lookback_hours)
+
+    history_rows = (
+        session.query(WardState)
+        .filter(
+            WardState.ward_id == ward_id,
+            WardState.timestamp >= cutoff,
+            WardState.timestamp < timestamp,
+        )
+        .order_by(WardState.timestamp.asc())
+        .all()
+    )
+
+    vent_history = [row.ventilation_index for row in history_rows]
+    pm25_history = [row.pm25_est for row in history_rows]
+    return vent_history, pm25_history
 
 
 def fetch_ground_stations_with_readings(
@@ -43,7 +158,6 @@ def fetch_ground_stations_with_readings(
     Returns:
         List of station dicts with lat, lon, pm25, pm10, no2, so2, co, o3
     """
-    # Query stations and join with latest readings (within last 2 hours)
     stations_query = (
         session.query(Station)
         .filter(Station.city_id == city_id, Station.is_active == True)  # noqa: E712
@@ -52,7 +166,6 @@ def fetch_ground_stations_with_readings(
 
     station_data = []
     for st in stations_query:
-        # Get latest reading for this station
         latest_reading = (
             session.query(Reading)
             .filter(Reading.station_id == st.id)
@@ -87,15 +200,13 @@ def fetch_active_fires(
 
     Args:
         session: Database session
-        city_id: City identifier (not used yet, fires are regional)
+        city_id: City identifier
         timestamp: Current processing timestamp
         lookback_hours: How many hours back to fetch
 
     Returns:
         List of fire dicts with lat, lon, frp, confidence, acq_date
     """
-    from datetime import timedelta
-
     cutoff = timestamp - timedelta(hours=lookback_hours)
 
     fires_query = (
@@ -127,13 +238,13 @@ def fetch_latest_weather(city_id: str) -> dict[str, Any]:
     if not city:
         return {}
 
-    lat, lon = city["centre"]
+    lon, lat = city["centre"]
 
     try:
         data = weather.fetch_weather(city_id, lat, lon)
         records = weather.normalize_weather(data, lat, lon)
         if records:
-            return records[0]  # Most recent hour
+            return records[0]
     except Exception as e:
         logger.error("Weather fetch failed", extra={"city_id": city_id, "error": str(e)})
 
@@ -151,7 +262,7 @@ def fetch_latest_cams(city_id: str) -> dict[str, float]:
     if not city:
         return {}
 
-    lat, lon = city["centre"]
+    lon, lat = city["centre"]
 
     try:
         data = cams.fetch_air_quality(city_id, lat, lon)
@@ -284,8 +395,8 @@ def compute_ward_state(
     conf_score, conf_band, conf_reasons = confidence.calculate_confidence(
         nearest_station_km=nearest_station_km,
         source_shares=source_shares,
-        weather_age_hours=0.0,  # Assume fresh
-        signals_conflict=False,  # TODO: implement conflict detection
+        weather_age_hours=0.0,
+        signals_conflict=False,
         has_cams_fallback_only=has_cams_fallback,
     )
 
@@ -345,7 +456,7 @@ def generate_and_upsert_actions(
     Returns:
         Number of actions generated
     """
-    city_id = ward_state["ward_id"].split("_")[0]  # Extract city from ward_id
+    city_id = ward_state["ward_id"].split("_")[0]
 
     actions_list = actions.generate_actions_for_ward(
         ward_id=ward_state["ward_id"],
@@ -415,10 +526,8 @@ def run_pipeline_for_city(
         },
     )
 
-    # 2. Load wards for this city (from database or static GeoJSON)
-    from airtrace.models import Ward
-
-    wards_query = session.query(Ward).filter(Ward.city_id == city_id).all()
+    # 2. Ensure wards are seeded and loaded for this city
+    wards_orm = ensure_city_and_wards_seeded(session, city_id)
     wards = [
         {
             "id": w.id,
@@ -430,24 +539,21 @@ def run_pipeline_for_city(
             "road_density_km": w.road_density_km,
             "industrial_area_km2": w.industrial_area_km2,
         }
-        for w in wards_query
+        for w in wards_orm
     ]
 
     if not wards:
         logger.warning("No wards found", extra={"city_id": city_id})
         return {"city_id": city_id, "wards_processed": 0, "actions_generated": 0}
 
-    # 3. For each ward: compute state and upsert
+    # 3. For each ward: fetch history, compute state, and upsert
     wards_processed = 0
     actions_generated = 0
 
-    # TODO: fetch ventilation history from database for trap detection
-    # For now, use empty history
-    vent_history: list[float | None] = []
-    pm25_history: list[float | None] = []
-
     for ward in wards:
         try:
+            vent_history, pm25_history = fetch_ward_history(session, ward["id"], timestamp)
+
             ward_state = compute_ward_state(
                 ward=ward,
                 stations=stations,

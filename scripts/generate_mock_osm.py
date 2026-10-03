@@ -12,7 +12,7 @@ def generate_mock_osm_layers(city_id: str, city: dict) -> None:
     city_dir = DATA_DIR / "static" / city_id
     city_dir.mkdir(parents=True, exist_ok=True)
 
-    lat, lon = city["centre"]
+    lon, lat = city["centre"]
 
     # 1. Roads (LineStrings)
     roads = {
