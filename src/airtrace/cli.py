@@ -46,8 +46,15 @@ def main() -> None:
 
         uvicorn.run("airtrace.api.main:app", host=args.host, port=args.port, reload=True)
     elif args.command == "ingest":
-        # Will be implemented in Phase 2
-        sys.exit("ingest: not yet implemented")
+        from airtrace.db import get_session_factory
+        from airtrace.ingest.runner import run_ingestion_for_city
+
+        SessionFactory = get_session_factory()
+        with SessionFactory() as session:
+            counts = run_ingestion_for_city(session, args.city)
+            print(f"\nIngestion complete for {args.city}:")
+            for source, count in counts.items():
+                print(f"  {source}: {count} records")
     elif args.command == "compute":
         # Will be implemented in Phase 5
         sys.exit("compute: not yet implemented")
@@ -55,8 +62,22 @@ def main() -> None:
         # Will be implemented in Phase 5
         sys.exit("replay: not yet implemented")
     elif args.command == "backfill":
-        # Will be implemented in Phase 2
-        sys.exit("backfill: not yet implemented")
+        from scripts.backfill import backfill_city
+
+        if args.city:
+            counts = backfill_city(args.city, args.days)
+            print(f"\nBackfill complete for {args.city}:")
+            for source, count in counts.items():
+                print(f"  {source}: {count} records")
+        else:
+            from airtrace.config import load_cities_config
+
+            cities = load_cities_config()
+            for city_id in cities:
+                counts = backfill_city(city_id, args.days)
+                print(f"\n{city_id}:")
+                for source, count in counts.items():
+                    print(f"  {source}: {count} records")
 
 
 if __name__ == "__main__":
