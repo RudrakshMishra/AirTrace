@@ -1,0 +1,57 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "highway": "primary",
+        "name": "Main Ring Road"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            23.209899999999998,
+            77.3626
+          ],
+          [
+            23.3099,
+            77.3626
+          ],
+          [
+            23.3099,
+            77.4626
+          ],
+          [
+            23.209899999999998,
+            77.4626
+          ],
+          [
+            23.209899999999998,
+            77.3626
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "highway": "trunk",
+        "name": "Highway North-South"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            23.2599,
+            77.3126
+          ],
+          [
+            23.2599,
+            77.51259999999999
+          ]
+        ]
+      }
+    }
+  ]
+}
