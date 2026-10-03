@@ -1,0 +1,17 @@
+{
+  "name": "AirTrace MP — Citizen Air Quality Advisory",
+  "short_name": "AirTrace MP",
+  "description": "Ward-level air quality advisory, pollution source tracking, and citizen alerts for Madhya Pradesh.",
+  "start_url": "/citizen",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#1F3A5F",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

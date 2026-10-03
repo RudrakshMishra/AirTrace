@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: "Helvetica Regular";
+    src: url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.eot");
+    src: url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.svg#Helvetica Regular")format("svg");
+}
+
+@theme {
+  --font-helvetica: "Helvetica Regular", ui-sans-serif, system-ui, sans-serif;
+  --color-primary-navy: #1F3A5F;
+  --color-accent-teal: #0E9AA7;
+  --color-highlight-saffron: #F28C28;
+
+  --color-aqi-good: #00B050;
+  --color-aqi-satisfactory: #92D050;
+  --color-aqi-moderate: #FFD400;
+  --color-aqi-poor: #F28C28;
+  --color-aqi-very-poor: #E03C31;
+  --color-aqi-severe: #7E0023;
+
+  --color-src-fire: #D55E00;
+  --color-src-traffic: #0072B2;
+  --color-src-dust: #E69F00;
+  --color-src-industry: #6A3D9A;
+  --color-src-other: #7F7F7F;
+
+  --font-sans: var(--font-inter), var(--font-noto), system-ui, sans-serif;
+  --font-hindi: var(--font-noto), sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: #F8FAFC;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --primary: #1F3A5F;
+    --primary-foreground: #FFFFFF;
+    --secondary: #0E9AA7;
+    --secondary-foreground: #FFFFFF;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #F28C28;
+    --accent-foreground: #FFFFFF;
+    --destructive: #E03C31;
+    --destructive-foreground: #FFFFFF;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #0E9AA7;
+    --radius: 0.75rem;
+
+    --header-bg: rgba(248, 250, 252, 0.85);
+    --card-border: #E2E8F0;
+  }
+
+  .dark {
+    --background: #0B111E;
+    --foreground: #F8FAFC;
+    --card: #131D2E;
+    --card-foreground: #F8FAFC;
+    --popover: #131D2E;
+    --popover-foreground: #F8FAFC;
+    --primary: #254977;
+    --primary-foreground: #FFFFFF;
+    --secondary: #0E9AA7;
+    --secondary-foreground: #FFFFFF;
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+    --accent: #F28C28;
+    --accent-foreground: #FFFFFF;
+    --destructive: #E03C31;
+    --destructive-foreground: #FFFFFF;
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: #0E9AA7;
+
+    --header-bg: rgba(11, 17, 30, 0.85);
+    --card-border: #23354E;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Lenis smooth scrolling rules */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Accessibility: focus ring and reduced motion */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
