@@ -1,0 +1,47 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "amenity": "school",
+        "name": "City Model School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.8677,
+          22.7296
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "amenity": "school",
+        "name": "Public High School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.8377,
+          22.7396
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "amenity": "school",
+        "name": "Greenwood School"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.87769999999999,
+          22.6996
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+# Cities configuration for AirTrace MP
+# bbox: [min_lon, min_lat, max_lon, max_lat]
+
+cities:
+  bhopal:
+    name: Bhopal
+    name_hi: भोपाल
+    state: Madhya Pradesh
+    centre: [77.4126, 23.2599]
+    bbox: [77.25, 23.10, 77.55, 23.40]
+    # Extended bbox for upwind fire detection (MP + neighbours)
+    fire_bbox: [75.0, 21.0, 80.0, 26.0]
+
+  indore:
+    name: Indore
+    name_hi: इंदौर
+    state: Madhya Pradesh
+    centre: [75.8577, 22.7196]
+    bbox: [75.70, 22.60, 76.00, 22.85]
+    fire_bbox: [73.5, 20.5, 78.5, 25.0]
+
+  singrauli:
+    name: Singrauli
+    name_hi: सिंगरौली
+    state: Madhya Pradesh
+    centre: [82.6747, 24.1996]
+    bbox: [82.50, 24.05, 82.85, 24.35]
+    fire_bbox: [80.5, 22.0, 85.0, 26.5]
+    # Singrauli-specific industrial points (power plants, mines)
+    industrial_points:
+      - name: NTPC Vindhyachal
+        lat: 24.0883
+        lon: 82.6547
+        type: power_plant
+      - name: NCL Jayant Mine
+        lat: 24.1200
+        lon: 82.6300
+        type: coal_mine
+      - name: NCL Nigahi Mine
+        lat: 24.1500
+        lon: 82.5900
+        type: coal_mine
+      - name: Essar Power
+        lat: 24.1100
+        lon: 82.7200
+        type: power_plant
+      - name: Reliance Power Sasan
+        lat: 24.1700
+        lon: 82.5800
+        type: power_plant

@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "amenity": "hospital",
+        "name": "District General Hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.84769999999999,
+          22.7096
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "amenity": "hospital",
+        "name": "City Multi-speciality Hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          75.87769999999999,
+          22.7496
+        ]
+      }
+    }
+  ]
+}

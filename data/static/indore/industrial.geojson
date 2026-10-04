@@ -1,0 +1,73 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "landuse": "industrial",
+        "name": "Industrial Area Phase 1"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75.8877,
+              22.7396
+            ],
+            [
+              75.9177,
+              22.7396
+            ],
+            [
+              75.9177,
+              22.7696
+            ],
+            [
+              75.8877,
+              22.7696
+            ],
+            [
+              75.8877,
+              22.7396
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "landuse": "construction",
+        "name": "Metro Construction Site"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              75.8377,
+              22.7096
+            ],
+            [
+              75.84769999999999,
+              22.7096
+            ],
+            [
+              75.84769999999999,
+              22.7196
+            ],
+            [
+              75.8377,
+              22.7196
+            ],
+            [
+              75.8377,
+              22.7096
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

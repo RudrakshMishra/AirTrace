@@ -1,0 +1,117 @@
+# Engine model constants – all tuneable from here
+# Version is bumped when any constant changes
+model_version: "0.1.0"
+
+# --- Fire source scoring ---
+fire:
+  max_distance_km: 400          # ignore fires beyond this
+  max_plume_travel_hours: 36    # ignore if wind too slow to carry plume
+  decay_length_km: 150          # exponential decay scale
+  wind_cap: 1.5                 # cap on min(wind_kmh/10, cap)
+  saturation_K: 50.0            # score = 1 - exp(-sum/K)
+  pm_ratio_boost: 1.2           # multiplier when PM2.5/PM10 > 0.6 AND CO elevated
+  pm_ratio_threshold: 0.6       # PM2.5/PM10 threshold for boost
+  co_elevated_ppm: 1.5          # CO threshold for "elevated"
+  wind_cone_half_angle_deg: 30  # fire is upwind if bearing within this of wind direction
+  # Back-trajectory (Phase 3b)
+  backtraj_hours: 12            # how many hours of past wind to trace
+  backtraj_corridor_km: 15      # fire within this distance of trajectory counts
+
+# --- Traffic source scoring ---
+traffic:
+  no2_logistic_midpoint: 60.0   # µg/m³ – midpoint of logistic curve
+  no2_logistic_steepness: 0.08
+  co_logistic_midpoint: 2.0     # ppm
+  co_logistic_steepness: 1.5
+  rush_hour_factor: 1.0         # 08–11 and 17–21 IST
+  off_peak_factor: 0.4
+  rush_hours_ist:               # [start, end) in IST hours
+    - [8, 11]
+    - [17, 21]
+  road_density_radius_km: 1.0
+  low_ventilation_boost: 1.3
+
+# --- Dust source scoring ---
+dust:
+  pm10_logistic_midpoint: 150.0  # µg/m³
+  pm10_logistic_steepness: 0.02
+  coarse_ratio_threshold: 0.4    # PM2.5/PM10 below this = coarse-dominant
+  dry_hours: 48                  # no rain in this window = dry
+  humidity_dry_threshold: 40.0   # RH % below this considered dry
+  daytime_hours_ist: [7, 19]     # daytime window
+  daytime_factor: 1.0
+  nighttime_factor: 0.5
+  construction_boost: 1.15       # multiplier near construction polygons
+
+# --- Industry source scoring ---
+industry:
+  so2_logistic_midpoint: 40.0    # µg/m³
+  so2_logistic_steepness: 0.1
+  proximity_radius_km: 5.0       # look for industrial zones within this
+  variance_window_hours: 6       # low hourly variance over this window = steady
+  steadiness_threshold: 0.3      # normalised variance below this = steady emission
+
+# --- Other (background) ---
+other:
+  floor_min: 0.10
+  floor_max: 0.15
+
+# --- Confidence scoring ---
+confidence:
+  base: 100
+  station_distance_penalty_max: 25   # up to -25 if nearest station > threshold
+  station_distance_threshold_km: 10.0
+  missing_data_penalty_max: 25       # part of the same 25-point bucket
+  close_sources_penalty_max: 20      # top-two sources within this spread
+  close_sources_spread: 10.0         # percentage-point spread
+  stale_weather_penalty: 15          # weather older than threshold
+  stale_weather_hours: 3.0
+  conflict_penalty: 15               # conflicting signals
+  dominant_bonus: 10                  # clear dominant + multiple signals
+  dominant_threshold: 15.0           # percentage-point lead to count as dominant
+  # Bands
+  high_threshold: 70
+  medium_threshold: 40
+
+# --- Interpolation ---
+interpolation:
+  idw_power: 2
+  min_stations: 3
+  max_stations: 5
+  idw_weight: 0.7
+  cams_weight: 0.3
+  cams_only_max_distance_km: 25.0    # beyond this, use CAMS only + Low confidence
+
+# --- Ventilation ---
+ventilation:
+  trap_threshold: 3000.0    # BLH(m) * wind(m/s) below this = poor
+  trap_consecutive_hours: 6  # flag after this many consecutive hours
+  pm25_rising_window_hours: 3
+
+# --- Vulnerability ---
+vulnerability:
+  weight_pop_density: 0.35
+  weight_schools: 0.25
+  weight_hospitals: 0.25
+  weight_deprivation: 0.15  # dropped if data unavailable
+
+# --- AQI breakpoints (CPCB India) for PM2.5 (µg/m³, 24-hr avg) ---
+aqi_breakpoints_pm25:
+  - [0, 30, 0, 50]        # Good
+  - [31, 60, 51, 100]     # Satisfactory
+  - [61, 90, 101, 200]    # Moderate
+  - [91, 120, 201, 300]   # Poor
+  - [121, 250, 301, 400]  # Very Poor
+  - [251, 500, 401, 500]  # Severe
+
+# --- Alert rules ---
+alerts:
+  max_citizen_alerts_per_day: 2
+  quiet_hours_ist: [22, 6]  # 22:00 to 06:00 IST – no citizen alerts
+  fire_plume_eta_alert: true
+  trap_alert: true
+  severity_bands:
+    moderate: 200
+    poor: 300
+    very_poor: 400
+    severe: 500
